@@ -106,6 +106,6 @@ function cum_damage_arr = calc_time_series_damage(data)
         S_seg = amps ./ (1 - means_seg / sigma_b);
         Nf_seg = C ./ (S_seg.^m);
         D_seg = sum(cnts ./ Nf_seg);
-        cum_damage_arr(t) = cum_damage_arr(t-1) + D_seg;                    % 单调递增函数
+        cum_damage_arr(t) = cum_damage_arr(t-1) + D_seg;                    % 滑动窗口叠加值
     end
 end
