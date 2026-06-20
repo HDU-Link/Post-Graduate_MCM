@@ -53,6 +53,11 @@ function pv = extract_peaks_valleys(data)
     pv = data(find(is_peak | is_valley));
 end
 %% 函数: 三点式雨流计数法
+% 设定三个连续的应力状态点（S1, S2, S3）作为分析单元，
+% 计算这两段相邻的应力变化量ΔS1 = |S1 - S2| 和 ΔS2 = |S2 - S3|，
+% 当ΔS1 ≤ ΔS2时，此时将S1至S2视为一个有效循环进行计数，然后剔除S1、S2；
+% 若ΔS1 > ΔS2，则当前三点组内不识别出循环，继续取S2, S3, S4(若无,则取S1)；
+% 若最终只剩2个应力状态点，采用取半计数的形式，counts=0.5。
 function [amplitudes, means, counts] = rainflow_3point(pv)
     X = pv(:); amplitudes = []; means = []; counts = []; idx = 3;
     S1 = X(1); S2 = X(2); S3 = X(3);
