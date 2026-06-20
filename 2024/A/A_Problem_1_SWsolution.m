@@ -62,7 +62,7 @@ function [amplitudes, means, counts] = rainflow_3point(pv)
     while length(X) >= 3
         DeltaS1 = abs(S1 - S2); DeltaS2 = abs(S2 - S3);
         if DeltaS1 <= DeltaS2
-            amplitudes = [amplitudes; DeltaS2];
+            amplitudes = [amplitudes; DeltaS1];
             means = [means; (S1 + S2) / 2];
             counts = [counts; 1];
             X = [X(1:idx-3); X(idx:end)];
