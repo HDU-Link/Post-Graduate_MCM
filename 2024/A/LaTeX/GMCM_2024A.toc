@@ -1,0 +1,10 @@
+\contentsline {section}{\numberline {1.}问题重述}{3}{section.1}%
+\contentsline {section}{\numberline {2.}模型假设}{3}{section.2}%
+\contentsline {section}{\numberline {3.}符号说明}{4}{section.3}%
+\contentsline {section}{\numberline {4.}模型建立与求解}{5}{section.4}%
+\contentsline {subsection}{\numberline {4\,.\,1}问题一：疲劳损伤计算模型}{5}{subsection.4.1}%
+\contentsline {subsection}{\numberline {4\,.\,2}问题二：载荷计算模型}{7}{subsection.4.2}%
+\contentsline {subsection}{\numberline {4\,.\,3}问题三：优化调度模型}{8}{subsection.4.3}%
+\contentsline {subsection}{\numberline {4\,.\,4}问题四：鲁棒优化模型}{8}{subsection.4.4}%
+\contentsline {section}{\numberline {5.}参考文献}{9}{section.5}%
+\contentsfinish 
