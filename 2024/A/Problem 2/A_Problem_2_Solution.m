@@ -17,16 +17,18 @@ for j = 1:2
         omega_r_ji = data_TS_WF.(farms{j}).WT{i}.states(:, 2);
         omega_dot_ji = [0; diff(omega_r_ji)];                               % 转子角加速度（数值微分）
         lambda_ji = omega_r_ji .* R ./ V_ji;                                % 叶尖速比
+        Cp_ji = 2*Tshaft_ji./ (pi*rho*R^2*V_ji.^3);
         Ct_ji = 2*Ft_ji./ (pi*rho*R^2*V_ji.^2);
         V = [V; V_ji]; Tshaft = [Tshaft; Tshaft_ji];
         Ft = [Ft; Ft_ji]; pitch = [pitch; pitch_ji];
         omega_r = [omega_r; omega_r_ji]; omega_dot = [omega_dot; omega_dot_ji];
-        lambda = [lambda; lambda_ji]; Ct = [Ct; Ct_ji];
+        lambda = [lambda; lambda_ji]; Cp = [Cp; Cp_ji]; Ct = [Ct; Ct_ji];
     end
 end
-clear j i V_ji Tshaft_ji Ft_ji pitch_ji omega_r_ji omega_dot_ji lambda_ji Ct_ji data_TS_WF farms
-%% 4. 非线性拟合 T_{shaft} = (0.5πρR²C_pV³)/ω_r - J_m·dω_r/dt
-%Cp = c1*(c2*(1/(λ+c3*β)-c4/(β**3+1))-c5*β-c6)*exp(-c7*(1/(λ+c3*β)-c4/(β**3+1))+c8*λ
+clear j i V_ji Tshaft_ji Ft_ji pitch_ji omega_r_ji omega_dot_ji lambda_ji Cp_ji Ct_ji data_TS_WF farms
+%% 4. 拟合 Cp(lambda, pitch) 的表达式
+%% 4.1 非线性拟合 T_{shaft} = (0.5πρR²C_pV³)/ω_r - J_m·dω_r/dt
+% Cp = c1*(c2*(1/(λ+c3*β)-c4/(β**3+1))-c5*β-c6)*exp(-c7*(1/(λ+c3*β)-c4/(β**3+1))+c8*λ
 T_model = @(c, x) 0.5*pi*rho*R^2*(c(1)*(c(2)*(1./(x(:,1)+c(3)*x(:,2))-c(4)./...
     (x(:,2).^3+1))-c(5)*x(:,2)-c(6)).* exp(-c(7)*(1./(x(:,1)+c(3)*x(:,2))-c(4)./...
     (x(:,2).^3+1)))+c(8)*x(:,1)).*x(:,3).^3./x(:,4) - c(9)*x(:,5);
@@ -40,6 +42,17 @@ fprintf('c4 = %.6f\n', C_fitted(4));fprintf('c5 = %.6f\n', C_fitted(5));
 fprintf('c6 = %.6f\n', C_fitted(6));fprintf('c7 = %.6f\n', C_fitted(7));
 fprintf('c8 = %.6f\n', C_fitted(8));fprintf('c9 = %.6f\n', C_fitted(9));
 Tshaft_pred = T_model(C_fitted, [lambda, pitch, V, omega_r, omega_dot]);
+%% 4.2 多项式拟合 Cp = a0 + a1*λ + a2*β + a3*λ^2 + a4*λ*β + a5*β^2 + a6*λ^3 + a7*β^3
+X_poly = [ones(2000*200,1), lambda, pitch, lambda.^2, lambda.*pitch, pitch.^2, lambda.^3, pitch.^3];
+theta_poly = X_poly \ Cp;                                                   % 最小二乘解
+fprintf('多项式拟合系数:');
+fprintf('a0 = %.6f,', theta_poly(1));fprintf('a1 = %.6f (λ),', theta_poly(2));
+fprintf('a2 = %.6f (β),', theta_poly(3));fprintf('a3 = %.6f (λ²),\n', theta_poly(4));
+fprintf('a4 = %.6f (λβ),', theta_poly(5));fprintf('a5 = %.6f (β²),', theta_poly(6));
+fprintf('a6 = %.6f (λ³),', theta_poly(7));fprintf('a7 = %.6f (β³)', theta_poly(8));
+Cp_pred_poly = theta_poly(1) + theta_poly(2)*lambda + theta_poly(3)*pitch + ...
+               theta_poly(4)*lambda.^2 + theta_poly(5)*lambda.*pitch + ...
+               theta_poly(6)*pitch.^2 + theta_poly(7)*lambda.^3 + theta_poly(8)*pitch.^3;
 %% 5. 拟合 Ct(lambda, pitch) 的表达式
 %% 5.1 多项式拟合 Ct = a0 + a1*λ + a2*β + a3*λ^2 + a4*λ*β + a5*β^2 + a6*λ^3 + a7*β^3
 X_poly = [ones(2000*200,1), lambda, pitch, lambda.^2, lambda.*pitch, pitch.^2, lambda.^3, pitch.^3];
@@ -65,18 +78,27 @@ fprintf('c5 = %.6f\n', c_fitted(5));fprintf('c6 = %.6f\n', c_fitted(6));
 fprintf('c7 = %.6f\n', c_fitted(7));fprintf('c8 = %.6f\n', c_fitted(8));
 Ct_pred_nl = ct_model(c_fitted, [lambda, pitch]);
 %% 6. 计算预测值及误差
+Tshaft_pred_poly = 0.5*pi*rho*R^2*Cp_pred_poly.*V.^3;                       % 主轴扭矩预测（使用多项式拟合）
 Ft_pred_poly = 0.5*pi*rho*R^2*Ct_pred_poly.*V.^2;                           % 塔架推力预测（使用多项式拟合）
 Ft_pred_nl = 0.5*pi*rho*R^2*Ct_pred_nl.*V.^2;                               % 塔架推力预测（使用非线性拟合）
 %% 7. 误差分析
-% 7.1 主轴扭矩误差
+% 7.1 主轴扭矩误差（多项式拟合）
+MAE_T = mean(abs(Tshaft - Tshaft_pred_poly));
+RMSE_T = sqrt(mean((Tshaft - Tshaft_pred_poly).^2));
+MAPE_T = mean(abs((Tshaft - Tshaft_pred_poly)./Tshaft)) * 100;
+R2_T = 1 - sum((Tshaft - Tshaft_pred_poly).^2) / sum((Tshaft - mean(Tshaft)).^2);
+fprintf('\n【主轴扭矩拟合误差】（多项式拟合）\n');
+fprintf('MAE:  %.4e N·m，', MAE_T);fprintf('RMSE: %.4e N·m\n', RMSE_T);
+fprintf('MAPE: %.2f%%，', MAPE_T);fprintf('R²:   %.4f\n', R2_T);
+% 7.2 主轴扭矩误差（非线性拟合）
 MAE_T = mean(abs(Tshaft - Tshaft_pred));
 RMSE_T = sqrt(mean((Tshaft - Tshaft_pred).^2));
 MAPE_T = mean(abs((Tshaft - Tshaft_pred)./Tshaft)) * 100;
 R2_T = 1 - sum((Tshaft - Tshaft_pred).^2) / sum((Tshaft - mean(Tshaft)).^2);
-fprintf('\n【主轴扭矩拟合误差】\n');
+fprintf('\n【主轴扭矩拟合误差】（非线性拟合）\n');
 fprintf('MAE:  %.4e N·m，', MAE_T);fprintf('RMSE: %.4e N·m\n', RMSE_T);
 fprintf('MAPE: %.2f%%，', MAPE_T);fprintf('R²:   %.4f\n', R2_T);
-% 7.2 塔架推力误差（多项式拟合）
+% 7.3 塔架推力误差（多项式拟合）
 MAE_F_poly = mean(abs(Ft - Ft_pred_poly));
 RMSE_F_poly = sqrt(mean((Ft - Ft_pred_poly).^2));
 MAPE_F_poly = mean(abs((Ft - Ft_pred_poly)./Ft)) * 100;
@@ -84,7 +106,7 @@ R2_F_poly = 1 - sum((Ft - Ft_pred_poly).^2) / sum((Ft - mean(Ft)).^2);
 fprintf('\n【塔架推力拟合误差（多项式拟合）】\n');
 fprintf('MAE:  %.4e N，', MAE_F_poly);fprintf('RMSE: %.4e N\n', RMSE_F_poly);
 fprintf('MAPE: %.2f%%，', MAPE_F_poly);fprintf('R²:   %.4f\n', R2_F_poly);
-% 7.3 塔架推力误差（非线性拟合）
+% 7.4 塔架推力误差（非线性拟合）
 MAE_F_nl = mean(abs(Ft - Ft_pred_nl));
 RMSE_F_nl = sqrt(mean((Ft - Ft_pred_nl).^2));
 MAPE_F_nl = mean(abs((Ft - Ft_pred_nl)./Ft)) * 100;
@@ -131,3 +153,8 @@ fprintf(' 1/λ* = 1/(λ + %.6fβ) - %.6f/(β³ + 1),λ = ω_r·R/V, J_m=%.6f\n',
 fprintf('【塔架推力公式】F_t = 0.5πρR²·C_t(λ,β)·V²，其中:\n');
 fprintf(' C_t = %.6f(%.6f/λ* - %.6fβ - %.6f)exp(-%.6f/λ*) + %.6fλ，\n', [c_fitted(1:2),c_fitted(5:8)]);
 fprintf(' 1/λ* = 1/(λ + %.6fβ) - %.6f/(β³ + 1),λ = ω_r·R/V\n', c_fitted(3:4));
+%% 10. 输出计算结果
+clear c0 Cp Ct Ft lambda omega_dot omega_r opts pitch R rho time_data Tshaft V Ct_pred_nl Ct_pred_poly Cp_pred_poly
+clear c_fitted C_fitted theta_poly X_poly Lg Pg lambda_grid Ct_surface n_show pitch_grid show_idx
+xlswrite('附件6-问题二答案表.xlsx', num2cell(reshape(Tshaft_pred,2000,200)), '主轴扭矩', 'B2');
+xlswrite('附件6-问题二答案表.xlsx', num2cell(reshape(Ft_pred_nl,2000,200)), '塔架推力', 'B2');
