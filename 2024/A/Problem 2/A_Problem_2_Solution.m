@@ -115,7 +115,7 @@ surf(Lg, Pg, Ct_surface, 'EdgeColor', 'none', 'FaceAlpha', 0.5);
 xlabel('λ');ylabel('β (deg)');zlabel('C_t');title('Ct(λ,β) 拟合结果');
 colormap('jet');grid on;view(45, 30);
 %% 9. 输出最终公式
-fprintf('【主轴扭矩公式】');fprintf('T_{shaft} = %.6f P_ref/ω_r', eta);
+fprintf('【主轴扭矩公式】');fprintf('T_{shaft} = %.6f P_ref/ω_r\n', eta);
 fprintf('【塔架推力公式】F_t = 0.5πρR²·C_t(λ,β)·V²，其中:\n');
 fprintf(' C_t = %.6f(%.6f/λ* - %.6fβ - %.6f)exp(-%.6f/λ*) + %.6fλ，\n', [c_fitted(1:2),c_fitted(5:8)]);
 fprintf(' 1/λ* = 1/(λ + %.6fβ) - %.6f/(β³ + 1),λ = ω_r·R/V\n', c_fitted(3:4));
