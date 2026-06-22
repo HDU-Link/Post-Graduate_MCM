@@ -7,7 +7,7 @@ R = 63;                                                                     % �
 %% 3. 收集所有风机的数据
 time_data = data_TS_WF.WF_2.WT{1}.time;
 Pref = []; V = []; Tshaft = []; Ft = []; pitch = [];
-omega_r = []; omega_dot = []; lambda = []; Ct = [];
+omega_r = []; lambda = []; Ct = [];
 for j = 1:2
     for i = 1:100
         Pref_ij = data_TS_WF.(farms{j}).WT{i}.inputs(:, 1);
@@ -16,17 +16,16 @@ for j = 1:2
         Ft_ji = data_TS_WF.(farms{j}).WT{i}.outputs(:, 2);
         pitch_ji = data_TS_WF.(farms{j}).WT{i}.states(:, 1);
         omega_r_ji = data_TS_WF.(farms{j}).WT{i}.states(:, 2);
-        omega_dot_ji = [0; diff(omega_r_ji)];                               % 转子角加速度（数值微分）
         lambda_ji = omega_r_ji .* R ./ V_ji;                                % 叶尖速比
         Ct_ji = 2*Ft_ji./ (pi*rho*R^2*V_ji.^2);
         Pref = [Pref; Pref_ij]; V = [V; V_ji]; Tshaft = [Tshaft; Tshaft_ji];
         Ft = [Ft; Ft_ji]; pitch = [pitch; pitch_ji];
-        omega_r = [omega_r; omega_r_ji]; omega_dot = [omega_dot; omega_dot_ji];
+        omega_r = [omega_r; omega_r_ji];
         lambda = [lambda; lambda_ji]; Ct = [Ct; Ct_ji];
     end
 end
-clear j i Pref_ij V_ji Tshaft_ji Ft_ji pitch_ji omega_r_ji omega_dot_ji lambda_ji Ct_ji data_TS_WF farms
-%% 4. 主轴扭矩的表达式 T_{shaft} = η*P_ref/w_r
+clear j i Pref_ij V_ji Tshaft_ji Ft_ji pitch_ji omega_r_ji lambda_ji Ct_ji data_TS_WF farms
+%% 4. 主轴扭矩的表达式 T_{shaft}(t+1) = η*P_ref(t)/w_r
 Tshaft_pred = Pref./omega_r; Tshaft_pred = [Tshaft(1);Tshaft_pred(1:end-1)]; 
 eta = (Tshaft_pred' * Tshaft) / (Tshaft_pred' * Tshaft_pred);
 %% 5. 拟合 Ct(lambda, pitch) 的表达式
@@ -85,7 +84,7 @@ fprintf('MAPE: %.2f%%，', MAPE_F_nl);    fprintf('R²:   %.4f\n', R2_F_nl);
 %% 8. 绘制结果图
 figure('Position', [100, 100, 1000, 600]);
 % 8.1 主轴扭矩 - 时间序列（随机选1000个点展示）
-subplot(221);n_show = min(1000, length(Tshaft));show_idx = randi(length(Tshaft), n_show, 1);
+subplot(221);n_show = min(10000, length(Tshaft));show_idx = randi(length(Tshaft), n_show, 1);
 scatter(Tshaft(show_idx)/1e6, Tshaft_pred(show_idx)/1e6, 5, 'filled');hold on;
 plot([min(Tshaft/1e6), max(Tshaft/1e6)], [min(Tshaft/1e6), max(Tshaft/1e6)], 'r--', 'LineWidth', 2);
 xlabel('实测 T_{shaft} (MN·m)');ylabel('预测 T_{shaft} (MN·m)');
@@ -100,7 +99,7 @@ subplot(223);residuals_T = (Tshaft - Tshaft_pred) / 1e6;
 histogram(residuals_T, 50, 'FaceColor', 'b', 'EdgeColor', 'none');
 xlabel('残差 (MN·m)');ylabel('频数');title('主轴扭矩残差分布');grid on;
 % 8.4 残差分布 - 塔架推力
-subplot(224);residuals_F = (Ft - Ft_pred_poly) / 1e6;
+subplot(224);residuals_F = (Ft - Ft_pred_nl) / 1e6;
 histogram(residuals_F, 50, 'FaceColor', 'r', 'EdgeColor', 'none');
 xlabel('残差 (MN)');ylabel('频数');title('塔架推力残差分布');grid on;
 % Ct拟合曲面（多项式拟合）
@@ -120,7 +119,7 @@ fprintf('【塔架推力公式】F_t = 0.5πρR²·C_t(λ,β)·V²，其中:\n')
 fprintf(' C_t = %.6f(%.6f/λ* - %.6fβ - %.6f)exp(-%.6f/λ*) + %.6fλ，\n', [c_fitted(1:2),c_fitted(5:8)]);
 fprintf(' 1/λ* = 1/(λ + %.6fβ) - %.6f/(β³ + 1),λ = ω_r·R/V\n', c_fitted(3:4));
 %% 10. 输出计算结果
-clear c0 Ct Ft lambda omega_dot omega_r opts pitch R rho time_data Tshaft V Ct_pred_nl Ct_pred_poly
+clear c0 Ct Ft lambda omega_r opts pitch R rho time_data Tshaft V Ct_pred_nl Ct_pred_poly
 clear eta c_fitted theta_poly X_poly Lg Pg lambda_grid Ct_surface n_show pitch_grid show_idx
 xlswrite('附件6-问题二答案表.xlsx', num2cell(reshape(Tshaft_pred,2000,200)), '主轴扭矩', 'B2');
 xlswrite('附件6-问题二答案表.xlsx', num2cell(reshape(Ft_pred_nl,2000,200)), '塔架推力', 'B2');

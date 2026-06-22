@@ -1,10 +1,4 @@
 clear; clc; close all;tic;
-%% 常数设置
-global m C sigma_b N
-m = 10;                                                                     % Wohler指数
-C = 9.77e70;                                                                % S-N曲线常数
-sigma_b = 50000000;                                                         % 材料拉伸断裂最大载荷值
-N = 42565440.4361;                                                          % 设计寿命循环次数
 %% 读取数据
 [~, ~, raw_spindle] = xlsread('附件1-疲劳评估数据.xls', '主轴扭矩');spindle_data = cell2mat(raw_spindle(2:101, 2:101));
 [~, ~, raw_tower] = xlsread('附件1-疲劳评估数据.xls', '塔架推力');tower_data = cell2mat(raw_tower(2:101, 2:101));
@@ -30,15 +24,6 @@ for i = 1:10
     title(['WT', num2str(i*10)]);xlabel("时间/秒");ylabel("塔架累计疲劳损伤程度");
 end
 clear i m C sigma_b N raw_spindle raw_tower
-%% 主函数：计算单台风机的疲劳损伤
-function [equivalent_load, cumulative_damage] = calculate_fatigue(data_series)
-    global m C sigma_b N
-    peaks_valleys = extract_peaks_valleys(data_series);                     % 步骤1: 提取波峰波谷
-    [amplitudes, means, counts] = rainflow_3point(peaks_valleys);           % 步骤2: 三点式雨流计数法
-    S_i = amplitudes ./ (1 - means / sigma_b);                              % 步骤3: Goodman曲线修正
-    equivalent_load = (sum(S_i.^m .* counts) / N)^(1/m);                    % 步骤4: 计算等效疲劳载荷                                             
-    cumulative_damage = sum(counts ./ (C ./ (S_i.^m)));                     % 步骤5: 计算累计疲劳损伤值
-end
 %% 函数: 提取波峰波谷
 function pv = extract_peaks_valleys(data)
     n = length(data); is_peak = false(n, 1); is_valley = false(n, 1);
@@ -88,7 +73,10 @@ function [amplitudes, means, counts] = rainflow_3point(pv)
 end
 %% 函数：逐秒时序滑动计算瞬时&累积损伤
 function cum_damage_arr = calc_time_series_damage(data)
-    global m C sigma_b
+    m = 10;                                                                     % Wohler指数
+    C = 9.77e70;                                                                % S-N曲线常数
+    sigma_b = 50000000;                                                         % 材料拉伸断裂最大载荷值
+    N = 42565440.4361;                                                          % 设计寿命循环次数
     cum_damage_arr = zeros(1, 100);
     for t = 3:10
         seg_data = data(1:t);
@@ -106,6 +94,6 @@ function cum_damage_arr = calc_time_series_damage(data)
         S_seg = amps ./ (1 - means_seg / sigma_b);
         Nf_seg = C ./ (S_seg.^m);
         D_seg = sum(cnts ./ Nf_seg);
-        cum_damage_arr(t) = cum_damage_arr(t-1) + D_seg;                    % 滑动窗口叠加值
+        cum_damage_arr(t) = cum_damage_arr(t-1) + D_seg;                    % 单调递增函数
     end
 end

@@ -168,22 +168,60 @@
 	\vspace{-20pt}
 \end{figure}
 \clearpage
-\subsection{问题三：优化调度模型}
-目标函数
+为了进一步将制定功率$P_{ref}^i$也考虑进塔架推力的模型中，修正模型为
 \begin{equation}
-	\min J = \alpha \frac{1}{100}\sum_{i=1}^{100} D_s^i(t) + (1-\alpha)\frac{1}{100}\sum_{i=1}^{100} D_t^i(t)
+	F_t^i(\tau) = 0.5{\pi}\rho R^2C_t(\lambda_i,\beta_i)v_i^2P_{ref}^i(\tau-1),
 \end{equation}
+重新拟合模型参数，拟合优度为$R^2=0.7097$，模型为
+\begin{equation}
+	C_t(\lambda_i,\beta_i)=0.000001\left( 115.9968\frac{1}{\lambda _{i}^{*}}-0.3942\beta _i- 5.0264\right) \text{e}^{-\frac{21.0093}{\lambda _{i}^{*}}},
+\end{equation}
+\begin{equation}
+	\lambda _i=\frac{\omega _{r}^{i}R}{v_i},\quad \frac{1}{\lambda _{i}^{*}}=\frac{1}{\lambda _i+0.120164\beta _i}-\frac{0.026982}{\beta _{i}^{3}+1}.
+\end{equation}
+\subsection{问题三：优化调度模型}
+\par 决策变量 
+\begin{equation}
+	P_{ref}^{i}(\tau), i=1,2,\cdots,100.
+\end{equation}
+\par 目标函数
+\begin{equation}
+	\min F_1 = \frac{1}{100}\sum_{i=1}^{100} D_s^i(\tau),
+\end{equation}
+\begin{equation}
+	\min F_2 = \frac{1}{100}\sum_{i=1}^{100} D_t^i(\tau),
+\end{equation}
+其中
+\begin{equation}
+D_s^i(\tau)=\sum_{j\in\Omega^s_i(\tau)}\frac{n_s^i(j)}{N_s^i(j)},
+\quad D_t^i(\tau)=\sum_{j\in\Omega^t_i(\tau)}\frac{n_t^i(j)}{N_t^i(j)},
+\end{equation}
+\begin{equation}
+	(\hat{S}_s^i)^mN^i_s=(\hat{S}_t^i)^mN^i_t=C,
+\end{equation}
+\begin{equation}
+	\frac{S^{i}_{s}}{\hat{S}^i_s}+\frac{\bar{S}^i_{s}}{\sigma _b}=1, \quad \frac{S^{i}_{t}}{\hat{S}^i_t}+\frac{\bar{S}^i_{t}}{\sigma _b}=1,
+\end{equation}
+\begin{equation}
+	T_s^i(\tau) = 1.057738\frac{P_{ref}^i(\tau-1)}{\omega_r^i},
+\quad 	F_t^i(\tau) = 0.5{\pi}\rho R^2C_t(\lambda_i,\beta_i)v_i^2P_{ref}^i(\tau-1),
+\end{equation}
+其中${S}^i_s, {S}^i_t$、$\bar{S}^i_s, \bar{S}^i_t$分别为$T_s^i, F_t^i $相应循环的幅值、均值。
 \par 约束条件
 \begin{align}
-	\sum_{i=1}^{100} P_{ref}^i &= P_t \\
-	0 \le P_{ref}^i &\le 5 \quad \text{(MW)} \\
-	|P_{ref}^i - \frac{{P}_{t}}{100}| &\le 1 \quad \text{(MW)}
+	\sum_{i=1}^{100} P_{ref}^i &= P_t, \\
+	0 \le P_{ref}^i &\le 5, \quad \text{(MW)} \\
+	|P_{ref}^i - \frac{{P}_{t}}{100}| &\le 1. \quad \text{(MW)}
 \end{align}
-
-\subsection{问题四：鲁棒优化模型}
-
-
+\par 采用\textbf{多目标非支配排序遗传算法}（ Multi-Objective Non-Dominated Sorting Genetic Algorithm，简称NSGA-II）寻找Pareto最优解。
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=\textwidth]{Figure_4}
+	\caption{优化调度功率对比}
+	\label{fig:4}
+\end{figure}
 \newpage
+\subsection{问题四：鲁棒优化模型}
 \section{参考文献}
 \begin{thebibliography}{99}
 	\bibitem{1} Musallam M, Johnson C M. An efficient implementation of the rainflow counting algorithm for life consumption estimation. \textit{IEEE Trans. Rel.}, 2012, 61(4): 978-986.
