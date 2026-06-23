@@ -1,6 +1,6 @@
-# 2024 年“华为杯”研究生数学建模竞赛 LaTeX 模板
+# 2024 年“华为杯”研究生数学建模竞赛题解说明 LaTeX 源代码
 
-这是一个为 **2024 年“华为杯”研究生数学建模竞赛** 准备的 LaTeX 模板，支持 **Overleaf** 在线使用，采用 **XeLaTeX** 编译。  
+这是 **2024 年“华为杯”研究生数学建模竞赛** 题解说明的 LaTeX 源代码，支持 **Overleaf** 在线使用，采用 **XeLaTeX** 编译。  
 本模板内置多款常用中文字体（如 KaiTi、LiSu、SimHei、SimSun、STXinwei 等）。
 
 ---
@@ -10,17 +10,16 @@
 ```
 /
 ├── figures/
-│   ├── logo2025.png         # 封面或文档中使用的 logo
-│   ├── title2025.pdf        # 标题页（封面）
+│   ├── logo2024.png         # 封面或文档中使用的 logo
+│   ├── title2024.pdf        # 标题页（封面）
 ├── gmcmtthesis.cls          # 模板文档类文件
 ├── KaiTi.ttf                # 楷体字体
 ├── LiSu.ttf                 # 隶书字体
-├── MathModel.pdf            # 模板编译示例 PDF
-├── MathModel.tex            # 主文档入口文件
+├── GMCM_2024A.pdf           # 模板编译 PDF
+├── GMCM_2024A.tex           # 主文档入口文件
 ├── SimHei.ttf               # 黑体字体
 ├── SimSun.ttf               # 宋体字体
-├── STXinwei.ttf             # 新魏字体
-└── test.jpg                 # 示例图片
+└── STXinwei.ttf             # 新魏字体
 ```
 
 ---
