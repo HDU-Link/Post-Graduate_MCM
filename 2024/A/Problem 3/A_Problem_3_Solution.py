@@ -19,7 +19,7 @@ for i in range(100):
     Tshaft.append(WF1[2][:, 0]); Ft.append(WF1[2][:, 1]);
     pitch.append(WF1[3][:, 0]); omega_r.append(WF1[3][:, 1]);
     Pt.append(sum(Pref[:][i]));
-Ct = np.array([Ft[i] / (0.5 * 3.1415926*1.225*63**2 * V[i]**2) for i in range(100)])
+Ct = np.array([Ft[i] / (0.5 *np.pi*1.225*63**2 * V[i]**2 * Pref[i]) for i in range(100)])
 Pref = np.array(Pref); V = np.array(V); omega_r = np.array(omega_r);
 Tshaft = np.array(Tshaft); Ft = np.array(Ft); pitch = np.array(pitch);
 Pt = np.sum(Pref, axis=0); Pt_ave = Pt / 100
@@ -104,7 +104,7 @@ def calc_damage(data):
 def optimize_Ts(t, Pref, P_his, omega_r_t, Pt_target, Pt_ave_t, P_min=0, P_max=5000000, delta_P=1000000):
     Ts_his = np.column_stack([2508044.70273628 * np.ones(100),
                                   1.057738 * P_his[:, :t] / omega_r_t[:, :t]]);
-    Rt_damage_tower = np.zeros((100, 100));
+    Rt_damage_shaft = np.zeros((100, 100));
     # 约束1: sum(P) = Pt
     constraint_eq = LinearConstraint(np.ones((1, 100)), np.array([Pt_target]), np.array([Pt_target]))
     # 约束2: 0 <= P <= 5000000, |P - Pt_ave| <= 1000000
@@ -113,8 +113,8 @@ def optimize_Ts(t, Pref, P_his, omega_r_t, Pt_target, Pt_ave_t, P_min=0, P_max=5
     def obj(P):
         T_s = 1.057738 * P / omega_r_t[:, t]
         for i in range(100):
-            Rt_damage_tower[i, :] = calc_damage(np.concatenate([Ts_his[i], np.array([T_s[i]])]))
-        return np.sum(Rt_damage_tower[:, t-1])
+            Rt_damage_shaft[i, :] = calc_damage(np.concatenate([Ts_his[i], np.array([T_s[i]])]))
+        return np.sum(Rt_damage_shaft[:, t-1])
     result = minimize(obj, Pt_ave_t* np.ones(100), # 初值亦可选Pref[:, t]
                       bounds=Bounds(lb, ub), constraints=constraint_eq,
                       method='SLSQP', options={'maxiter': 1000, 'ftol': 2e-6})
@@ -142,8 +142,8 @@ rt_damage_tower = np.zeros((100, 100)); rt_damage_shaft = np.zeros((100, 100));
 Ts = np.column_stack([2508044.70273628 * np.ones(100), 1.057738 * Pref[:, :100] / omega_r[:, :100]]);
 Ft = 0.5 * np.pi * 1.225 * 63**2 * V[:, :101]**2 * Ct[:, :101] * Pref[:, :101];
 for i in range(100):
-    rt_damage_tower[i, :] = calc_damage(Ts[i]);
-    rt_damage_shaft[i, :] = calc_damage(Ft[i]);
+    rt_damage_shaft[i, :] = calc_damage(Ts[i]);
+    rt_damage_tower[i, :] = calc_damage(Ft[i]);
 # ============ 4. 创建动画 ============
 turbine_idx = 0  # 要显示的单台风机索引
 # 创建图形
@@ -170,8 +170,8 @@ ax2.legend(loc='upper right'); ax2.grid(True, alpha=0.3)
 line_obj_ref, = ax3.plot([], [], color=colors[4], linewidth=1.5, label='参考目标值')
 line_obj_opt, = ax3.plot([], [], color=colors[5], linewidth=1.5, label='优化目标值')
 ax3.set_xlabel('时间 (s)'); ax3.set_title('总目标函数值')
-ax3.set_ylabel('塔架推力累计疲劳损伤');
 #ax3.set_ylabel('主轴扭矩累计疲劳损伤'); 
+ax3.set_ylabel('塔架推力累计疲劳损伤');
 ax3.legend(loc='upper right'); ax3.grid(True, alpha=0.3)
 # 统计信息
 text_1 = ax2.text(0, 0, '', transform=ax2.transAxes, fontsize=12, verticalalignment='bottom');
@@ -179,11 +179,11 @@ text_2 = ax3.text(0, 0, '', transform=ax3.transAxes, fontsize=12, verticalalignm
 # 更新函数
 def update(frame):
     current_time = frame % 100; t = current_time + 1
-    P_opt, obj_val = optimize_Ts(t, Pref, P_opt_history[:, :t+1], omega_r[:, :t+1], Pt[t], Pt_ave[t])
-    #P_opt, obj_val = optimize_Ft(t, Pref, P_opt_history[:, :t+1], Ct[:, :t+1], V[:, :t+1], Pt[t], Pt_ave[t])
+    #P_opt, obj_val = optimize_Ts(t, Pref, P_opt_history[:, :t+1], omega_r[:, :t+1], Pt[t], Pt_ave[t])
+    P_opt, obj_val = optimize_Ft(t, Pref, P_opt_history[:, :t+1], Ct[:, :t+1], V[:, :t+1], Pt[t], Pt_ave[t])
     P_opt_history[:, t] = P_opt; P_optimal[:, t] = P_opt; obj_values[t] = obj_val/100;
-    ref_values[t] = np.sum(rt_damage_tower[:, t-1])/100;
     #ref_values[t] = np.sum(rt_damage_shaft[:, t-1])/100;
+    ref_values[t] = np.sum(rt_damage_tower[:, t-1])/100;
     fig.suptitle(f'风电场实时功率分配 (t={Time[current_time]:.0f}s)', fontsize=16, fontweight='bold')
     # 更新子图1: 功率分配
     for bar, ref_val, opt_val in zip(bars_ref, Pref[:, current_time]/1e6, P_optimal[:, current_time]/1e6):
@@ -202,13 +202,13 @@ def update(frame):
     ref_obj = ref_values[0:current_time+1]
     opt_obj = obj_values[0:current_time+1]
     line_obj_ref.set_data(time_obj, ref_obj);  line_obj_opt.set_data(time_obj, opt_obj)
-    ax3.set_xlim(0, Time[current_time] + 1); ax3.set_ylim(0, max(obj_values[current_time], ref_values[current_time])*1.5+1e-12)
+    ax3.set_xlim(0, Time[current_time] + 1); ax3.set_ylim(0, max(obj_values[current_time], ref_values[current_time])*1.5+1e-20)
     # 更新统计信息
     stats_text_1 = f"""参考功率 {Pref[turbine_idx, current_time]:.3f} W,  优化功率 {P_optimal[turbine_idx, current_time]:.3f} W"""
     stats_text_2 = f"""参考目标值 {ref_values[current_time]:.8e},  优化目标值 {obj_values[current_time]:.8e}"""
     text_2.set_text(stats_text_2); text_1.set_text(stats_text_1)
     return bars_ref, bars_opt, line_ref, line_opt, line_obj_ref, line_obj_opt, text_1, text_2
 ani = animation.FuncAnimation(fig, update, frames=range(0, 100), interval=200, blit=False, repeat=False)
-#ani.save('wind_turbine_optimization.gif', writer=PillowWriter(fps=5))
+ani.save('wind_turbine_optimization.gif', writer=PillowWriter(fps=5))
 plt.tight_layout()
 plt.show()

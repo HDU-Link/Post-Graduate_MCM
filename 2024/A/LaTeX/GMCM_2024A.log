@@ -1,4 +1,4 @@
-This is XeTeX, Version 3.141592653-2.6-0.999998 (TeX Live 2026) (preloaded format=xelatex 2026.5.4)  22 JUN 2026 21:36
+This is XeTeX, Version 3.141592653-2.6-0.999998 (TeX Live 2026) (preloaded format=xelatex 2026.5.4)  23 JUN 2026 22:32
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -1572,33 +1572,40 @@ Package hyperref Warning: Token not allowed in a PDF string (Unicode):
 (hyperref)                \kern 2.00792pt
 (hyperref)                removed on input line 182.
 
-File: Figure_4.pdf Graphic file (type pdf)
-<use Figure_4.pdf>
-
-LaTeX Warning: `h' float specifier changed to `ht'.
-
 [8
 
 ]
+File: Figure_4.png Graphic file (type bmp)
+<Figure_4.png>
+File: Figure_5.png Graphic file (type bmp)
+<Figure_5.png>
+ [9
+
+]
+File: Figure_6.png Graphic file (type bmp)
+<Figure_6.png>
+File: Figure_7.png Graphic file (type bmp)
+<Figure_7.png>
+ [10]
 
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `\leavevmode@ifvmode' on input line 224.
+(hyperref)                removing `\leavevmode@ifvmode' on input line 246.
 
 
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
 (hyperref)                \kern 2.00792pt
-(hyperref)                removed on input line 224.
+(hyperref)                removed on input line 246.
 
 
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `\leavevmode@ifvmode' on input line 224.
+(hyperref)                removing `\leavevmode@ifvmode' on input line 246.
 
 
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
 (hyperref)                \kern 2.00792pt
-(hyperref)                removed on input line 224.
+(hyperref)                removed on input line 246.
 
-[9] (./GMCM_2024A.aux)
+[11] (./GMCM_2024A.aux)
  ***********
 LaTeX2e <2025-11-01>
 L3 programming layer <2022/08/05>
@@ -1612,12 +1619,12 @@ Package rerunfilecheck Info: File `GMCM_2024A.out' has not changed.
  )
 (\end occurred when \iftrue on line 15 was incomplete) 
 Here is how much of TeX's memory you used:
- 23524 strings out of 468168
- 491963 string characters out of 5436525
- 950434 words of memory out of 5000000
- 51754 multiletter control sequences out of 15000+600000
+ 23655 strings out of 468168
+ 497820 string characters out of 5436525
+ 950630 words of memory out of 5000000
+ 51885 multiletter control sequences out of 15000+600000
  637878 words of font info for 151 fonts, out of 8000000 for 9000
  1348 hyphenation exceptions out of 8191
- 107i,11n,125p,404b,598s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 107i,11n,125p,404b,623s stack positions out of 10000i,1000n,20000p,200000b,200000s
 
-Output written on GMCM_2024A.pdf (10 pages).
+Output written on GMCM_2024A.pdf (12 pages).

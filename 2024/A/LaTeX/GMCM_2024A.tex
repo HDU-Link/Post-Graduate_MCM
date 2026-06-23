@@ -17,10 +17,10 @@
 	针对风电场有功功率优化调度中的关键问题，本文围绕疲劳损伤实时量化、载荷间接估计、多目标优化调度及鲁棒性增强四个层次展开研究。
 	\par 针对问题一，首先，基于 Palmgren-Miner 疲劳损伤理论建立风机主轴和塔架的累积疲劳损伤程度量化指标计算的数学模型。接着，基于三点式雨流计数法原理，利用滑动窗口内的载荷损伤对历史疲劳损伤进行累加，在CPU上实现每秒损伤值计算，计算时间<1s，且计算结果相似度良好。
 	\par 针对问题二，基于风机的气动系统模型，建立了与风速和功率参考值相关的主轴扭矩和塔架推力计算模型，分别采用最小二乘法以及Levenberg-Marquardt算法拟合参数，拟合优度分别为0.9691和0.9999。
-	\par 针对问题三，构建以主轴和塔架损伤均值最小化为双目标、带功率平衡与偏差约束的优化模型，每秒求解一次，并对比优化前后疲劳损伤总和显著降低。
-	\par 针对问题四引入噪声和延迟的鲁棒补偿机制，采用状态估计与预测校正策略。本文方法兼顾实时性与精度，具有较强的工程实用性。
+	\par 针对问题三，构建以主轴和塔架损伤均值最小化为双目标、满足功率平衡与偏差约束的优化模型，采用NSGA-II 算法每秒求解一次，取Pareto前沿中选择双目标之和最小的解，制作了动图每秒实时对比优化前后疲劳损伤。
+	\par 针对问题四，基于卡尔曼滤波去噪，同时采用差分自回归移动平均（ARIMA）和 LSTM模型根据已有数据预测延迟的信号，提升优化模型的鲁棒性。
 
-\keywords{疲劳损伤；滑动窗口；雨流计数法；NSGA-II 算法；鲁棒优化}
+\keywords{滑动窗口；雨流计数法；NSGA-II 算法；卡尔曼滤波}
 \end{abstract}
 %\pagestyle{plain}
 \tableofcontents
@@ -214,14 +214,67 @@ D_s^i(\tau)=\sum_{j\in\Omega^s_i(\tau)}\frac{n_s^i(j)}{N_s^i(j)},
 	|P_{ref}^i - \frac{{P}_{t}}{100}| &\le 1. \quad \text{(MW)}
 \end{align}
 \par 采用\textbf{多目标非支配排序遗传算法}（ Multi-Objective Non-Dominated Sorting Genetic Algorithm，简称NSGA-II）寻找Pareto最优解。
+\clearpage
 \begin{figure}[h]
 	\centering
-	\includegraphics[width=\textwidth]{Figure_4}
-	\caption{优化调度功率对比}
+	\includegraphics[width=0.95\textwidth]{Figure_4}
+	\caption{NSGA-II算法优化风机功率调度前后疲劳损伤对比（t=50s）}
 	\label{fig:4}
+\end{figure}
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=0.95\textwidth]{Figure_5}
+	\caption{NSGA-II算法优化风机功率调度前后疲劳损伤对比（t=100s）}
+	\vspace{-20pt}
+	\label{fig:5}
+\end{figure}
+\newpage
+\noindent 注： 采用序列最小二乘规划（SLSQP）方法单独求解各目标，结果如图所示。
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=0.9\textwidth]{Figure_6}
+	\caption{风机功率调度优化前后塔架推力疲劳损伤对比}
+	\label{fig:6}
+\end{figure}
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=0.9\textwidth]{Figure_7}
+	\caption{风机功率调度优化前后主轴扭矩疲劳损伤对比}
+	\label{fig:7}
 \end{figure}
 \newpage
 \subsection{问题四：鲁棒优化模型}
+卡尔曼滤波假设系统状态随时间线性演化，且观测值带有高斯白噪声，通过最小化估计误差的协方差，在“物理模型预测”和“含噪传感器测量”之间找到最优平衡，给出状态的最优估计。
+\par \textbf{状态预测（先验估计） }
+根据上一时刻的最优估计，预测当前时刻的状态：
+\[
+\hat{x}_{k|k-1} = A \hat{x}_{k-1|k-1} + B u_{k-1}
+\]
+同时预测误差协方差：
+\[
+P_{k|k-1} = A P_{k-1|k-1} A^T + Q
+\]
+其中\(A\)是状态转移矩阵，\(B\)是控制输入，\(u\)是外部输入，  
+\(Q\)是过程噪声协方差。
+\par\textbf{ 测量更新（后验校正） }
+利用当前观测 \(z_k\) 修正预测值：
+\begin{itemize}
+	\item 计算卡尔曼增益：
+	\[
+	K_k = P_{k|k-1} H^T (H P_{k|k-1} H^T + R)^{-1}
+	\]
+	\item 状态更新：
+	\[
+	\hat{x}_{k|k} = \hat{x}_{k|k-1} + K_k (z_k - H \hat{x}_{k|k-1})
+	\]
+	\item 误差协方差更新：
+	\[
+	P_{k|k} = (I - K_k H) P_{k|k-1}
+	\]
+	其中\(H\)是观测矩阵，\(R\)是测量噪声协方差。
+\end{itemize}
+
+
 \section{参考文献}
 \begin{thebibliography}{99}
 	\bibitem{1} Musallam M, Johnson C M. An efficient implementation of the rainflow counting algorithm for life consumption estimation. \textit{IEEE Trans. Rel.}, 2012, 61(4): 978-986.
