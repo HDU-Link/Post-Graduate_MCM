@@ -33,33 +33,8 @@
 - Overleaf 用户请在 **Menu → Compiler** 中选择 **XeLaTeX**。  
 - 本地用户请确保安装了 **XeLaTeX**（建议使用 TeX Live 2023+ 或 MiKTeX）。
 
-### 字体说明
-
-模板内已包含常见中文字体文件：  
-
-- KaiTi.ttf（楷体）  
-- LiSu.ttf（隶书）  
-- SimHei.ttf（黑体）  
-- SimSun.ttf（宋体）  
-- STXinwei.ttf（新魏）  
-
-这样可以避免 Overleaf 或部分系统环境下缺失中文字体导致的编译报错。  
-
-如需更换字体，可以在 `MathModel.tex` 或 `gmcmtthesis.cls` 中修改 `\setCJKmainfont` 和 `\setmainfont` 设置。
-
----
-
-## 示例
-
-- 直接编译 `MathModel.tex` 即可得到示例报告 `MathModel.pdf`。  
-- 可以替换 `figures/` 下的图片或 `test.jpg` 来测试插图效果。  
-
----
-
 ## 鸣谢
 
 本模板参考并改写自 [zhanwen/MathModel](https://github.com/zhanwen/MathModel)，在此感谢其开源贡献。
 
----
-
-祝你竞赛顺利，论文排版顺畅！🎉
+祝各位同学竞赛顺利，论文排版顺畅！🎉
