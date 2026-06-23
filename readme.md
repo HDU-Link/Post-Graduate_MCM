@@ -1,45 +1,78 @@
-# Wind Turbine Fatigue Analysis
+## 中国研究生数学建模竞赛
 
-MATLAB implementation for fatigue assessment of wind turbine structural components (main shaft and tower) based on the 2023 Post-Graduate Mathematical Contest in Modeling (Problem A).
+### 📋 项目简介
+本仓库主要包含个人对中国研究生数学建模竞赛赛题的分析和求解。
+内容仅供学习参考、交流使用，不保证完全正确。欢迎各位同学交流讨论，共同进步！
 
-## 📋 Overview
 
-This project provides a comprehensive framework for evaluating fatigue loads and cumulative damage of wind turbine components under operational conditions. The code implements the Palmgren-Miner linear damage rule combined with the Goodman mean stress correction method, utilizing rainflow cycle counting for load spectrum analysis.
-
-## 🎯 Problem Description
-
-The fatigue assessment of wind turbines is critical for ensuring structural integrity and operational safety. This solution addresses:
-- **Main Shaft Torque Analysis**: Evaluating torsional fatigue loads
-- **Tower Thrust Analysis**: Assessing bending fatigue from aerodynamic forces
-- **100 Turbine Batch Processing**: Comparative analysis across multiple units
-
-## 🔧 Methodology
-
-### 1. Data Processing
-- Extract peaks and valleys from time-series load data
-- Eliminate redundant turning points for efficient counting
-
-### 2. Cycle Counting
-- Three-point rainflow counting algorithm
-- Identifies full and half cycles from load history
-
-### 3. Mean Stress Correction
-- Goodman correction formula: `S_i = amplitude / (1 - mean/σ_b)`
-- Accounts for mean stress effects on fatigue life
-
-### 4. Fatigue Assessment
-- **Equivalent Fatigue Load**: `L_eq = (Σ(S_i^m × n_i) / N)^(1/m)`
-- **Cumulative Damage**: `D = Σ(n_i / (C / S_i^m))`
-- Palmgren-Miner linear damage accumulation rule
-
-## 📁 Repository Structure
+### 📁 项目结构
 
 ```
-Post-Graduate_MCM/
-├── README.md
-├── fatigue_analysis.m          # Main script
-├── data/
-│   └── 附件1-疲劳评估数据.xls   # Input data file
-└── results/
-    └── output_plots.fig        # Generated visualization
+2024/A/                        # 2024年A题：风电场有功功率优化分配
+├── Figures/                    # 论文配图
+│   ├── Problem_1_Figure_1.svg
+│   ├── Problem_1_Figure_2.svg
+│   ├── Problem_2_Figure_3.svg
+│   └── Problem_2_Figure_4.svg
+│
+├── LaTeX/                      # 论文LaTeX源文件
+│   ├── GMCM_2024A.tex         # 主TeX文件
+│   ├── GMCM_2024A.pdf         # 最终论文
+│   ├── figures/               # 论文插图
+│
+├── Papers/                     # 参考文献/优秀论文
+│   ├── A24102940057.pdf
+│   ├── A24103350007.pdf
+│   ├── A24103530117.pdf
+│   └── A24107120016.pdf
+│
+├── Problem 1/                  # 问题一：疲劳损伤量化指标计算
+│   ├── A_Problem_1_A24102940057.m
+│   ├── A_Problem_1_RFoffline.m
+│   ├── A_Problem_1_RFsolution.m
+│   ├── A_Problem_1_SWsolution.m
+│   ├── 附件1-疲劳评估数据.xls
+│   └── 附件5-问题一答案表.xlsx
+│
+├── Problem 2/                  # 问题二：主轴扭矩和塔架推力估算
+│   ├── A_Problem_2_Solution.m
+│   ├── A_Problem_2_RevisedSolution.m
+│   ├── 附件2-风电机组采集数据.mat
+│   ├── 附件2-风电机采集数据_WF1.xlsx
+│   ├── 附件2-风电机采集数据_WF2.xlsx
+│   ├── 附件6-问题二答案表.xlsx
+│   └── 附件A：风机建模参考方法及软件使用说明.pdf
+│
+├── Problem 3/                  # 问题三：有功调度优化
+│   ├── A_Problem_3_Solution.py   # Python优化求解代码
+│   ├── Problem_3.gif            # 优化过程动画
+│   └── 附件2-风电机组采集数据.mat
+│
+└── Problem 4/                  # 问题四：噪声与延迟处理
+    ├── 附件3-噪声和延迟作用下的采集数据.mat
+    ├── 附件4-噪声和延迟作用下的采集数据.xlsx
+    └── 附件3数据说明.txt
 ```
+
+### 🎯 2024年A题简介
+本题需要针对风电场有功功率优化分配问题，建立完整的数学模型和求解算法。通过考虑风机疲劳损伤、功率平衡、出力限制等多重约束，实现风电场有功功率的优化调度，降低风机的累积疲劳损伤程度。
+#### 问题一：疲劳损伤量化指标计算
+- **Palmgren-Miner线性累积损伤理论**
+- **三点式雨流计数法**
+- **Goodman曲线修正**
+- **滑动时间窗（Sliding Time Window）**
+
+#### 问题二：应力/扭矩估算
+- 基于风速、功率参考值的扭矩/推力估算
+
+#### 问题三：有功功率优化调度
+- **多目标优化模型**：最小化主轴+塔架累积疲劳损伤
+- 约束条件：
+  - 功率平衡约束：ΣP_ref = P_t
+  - 风机出力约束：0 ≤ P_ref ≤ 5MW
+  - 调节精度约束：|P_ref - P_t/W_t| ≤ 1MW
+
+#### 问题四：噪声与延迟处理
+- **SVD（奇异值分解）** 降噪
+- **相位差法** 检测通信延迟
+
