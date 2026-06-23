@@ -1,8 +1,8 @@
 ## 中国研究生数学建模竞赛
 
 ### 📋 项目简介
-本仓库主要包含个人对中国研究生数学建模竞赛赛题的分析和求解。
-内容仅供学习参考、交流使用，不保证完全正确。欢迎各位同学交流讨论，共同进步！
+本仓库主要包含个人对中国研究生数学建模竞赛赛题的分析。
+内容仅供学习参考、交流使用，非官方解读，不保证正确性。欢迎各位同学交流讨论，共同进步！
 
 
 ### 📁 项目结构
@@ -13,7 +13,9 @@
 │   ├── Problem_1_Figure_1.svg
 │   ├── Problem_1_Figure_2.svg
 │   ├── Problem_2_Figure_3.svg
-│   └── Problem_2_Figure_4.svg
+│   ├── Problem_2_Figure_4.svg
+│   ├── Problem_3_Figure_5.png
+│   └── Problem_4_Figure_6.png
 │
 ├── LaTeX/                      # 论文LaTeX源文件
 │   ├── GMCM_2024A.tex         # 主TeX文件
@@ -44,12 +46,15 @@
 │   └── 附件A：风机建模参考方法及软件使用说明.pdf
 │
 ├── Problem 3/                  # 问题三：有功调度优化
-│   ├── A_Problem_3_Solution.py   # Python优化求解代码
-│   ├── Problem_3.gif            # 优化过程动画
-│   └── 附件2-风电机组采集数据.mat
+│   ├── A_Problem_3_Solution.py
+│   ├── A_Problem_3_Solution_NSGAII.py    # 多目标优化代码
+│   ├── Problem_3_Solution.gif            # 优化过程动画
+│   ├── 附件2-风电机组采集数据.mat
+│   └── 附件2数据说明.txt
 │
 └── Problem 4/                  # 问题四：噪声与延迟处理
     ├── 附件3-噪声和延迟作用下的采集数据.mat
+    ├── A_Problem_4_Solution_Robust.py
     ├── 附件4-噪声和延迟作用下的采集数据.xlsx
     └── 附件3数据说明.txt
 ```
@@ -73,6 +78,7 @@
   - 调节精度约束：|P_ref - P_t/W_t| ≤ 1MW
 
 #### 问题四：噪声与延迟处理
-- **SVD（奇异值分解）** 降噪
-- **相位差法** 检测通信延迟
+- **卡尔曼滤波** 降噪
+- **LSTM/ARIMA** 检测通信延迟并补偿时滞 
 
+注：问题四仅给出可行思路，代码尚未完全给出，具体求解方案可参考优秀论文
